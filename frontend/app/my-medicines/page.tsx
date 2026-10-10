@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, getAuth, UserMedicine, Medicine } from "@/lib/api";
+import { MedicinePDFExport } from "@/components/PDFExport";
+import { getMedicineIcon } from "@/lib/medicine-icons";
 
 export default function MyMedicinesPage() {
   const router = useRouter();
@@ -14,10 +16,12 @@ export default function MyMedicinesPage() {
   const [timing, setTiming] = useState("");
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<number | null>(null);
+  const [user, setUser] = useState<any>(null);
 
   const loadMedicines = () => {
     const auth = getAuth();
-    if (!auth) return router.push("/");
+    if (!auth) return router.push("/login");
+    setUser(auth);
     api.getUserMedicines(auth.id).then(setMedicines).catch(console.error).finally(() => setLoading(false));
   };
 
@@ -66,6 +70,15 @@ export default function MyMedicinesPage() {
               <h1 className="text-xl font-bold text-white">📋 My Medicines</h1>
               <p className="text-xs text-slate-500">{medicines.length} medicine{medicines.length !== 1 ? "s" : ""} in your list</p>
             </div>
+            {medicines.length > 0 && user && (
+              <MedicinePDFExport
+                data={{
+                  userName: user.name,
+                  userEmail: user.email,
+                  medicines,
+                }}
+              />
+            )}
             <button onClick={() => setShowAdd(true)} className="btn-primary px-5 py-2.5 text-white font-medium rounded-xl text-sm flex items-center gap-2">
               <span className="text-lg leading-none">+</span> Add
             </button>
@@ -178,44 +191,47 @@ export default function MyMedicinesPage() {
           ) : (
             <>
               <div className="space-y-3">
-                {medicines.map((med, index) => (
-                  <div
-                    key={med.id}
-                    className="glass-card glass-card-hover p-5 flex items-center gap-4 animate-fade-in-up"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="w-14 h-14 bg-gradient-medical rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
-                      <span className="text-2xl">💊</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-white text-lg truncate">{med.medicineName}</h3>
-                      <div className="flex flex-wrap gap-2 mt-1.5">
-                        {med.dosage && (
-                          <span className="text-xs bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20">
-                            💊 {med.dosage}
-                          </span>
-                        )}
-                        {med.timing && (
-                          <span className="text-xs bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20">
-                            ⏰ {med.timing}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleRemove(med.id)}
-                      disabled={removing === med.id}
-                      className="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center border border-red-500/20 hover:bg-red-500/20 transition-all disabled:opacity-50 flex-shrink-0"
-                      title="Remove"
+                {medicines.map((med, index) => {
+                  const medIcon = getMedicineIcon(med.medicineName);
+                  return (
+                    <div
+                      key={med.id}
+                      className="glass-card glass-card-hover p-5 flex items-center gap-4 animate-fade-in-up"
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      {removing === med.id ? (
-                        <span className="animate-spin-slow inline-block w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full" />
-                      ) : (
-                        "✕"
-                      )}
-                    </button>
-                  </div>
-                ))}
+                      <div className={`w-14 h-14 bg-gradient-to-br ${medIcon.gradient} rounded-xl flex items-center justify-center flex-shrink-0 border border-white/10`}>
+                        <span className="text-3xl">{medIcon.emoji}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-white text-lg truncate">{med.medicineName}</h3>
+                        <div className="flex flex-wrap gap-2 mt-1.5">
+                          {med.dosage && (
+                            <span className="text-xs bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20">
+                              💊 {med.dosage}
+                            </span>
+                          )}
+                          {med.timing && (
+                            <span className="text-xs bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20">
+                              ⏰ {med.timing}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleRemove(med.id)}
+                        disabled={removing === med.id}
+                        className="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center border border-red-500/20 hover:bg-red-500/20 transition-all disabled:opacity-50 flex-shrink-0"
+                        title="Remove"
+                      >
+                        {removing === med.id ? (
+                          <span className="animate-spin-slow inline-block w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full" />
+                        ) : (
+                          "✕"
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Check Interactions Button */}

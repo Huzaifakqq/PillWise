@@ -14,7 +14,7 @@ export default function FamilyPage() {
 
   const loadFamily = () => {
     const auth = getAuth();
-    if (!auth) return router.push("/");
+    if (!auth) return router.push("/login");
     api.getFamily(auth.id).then(setMembers).catch(console.error).finally(() => setLoading(false));
   };
 

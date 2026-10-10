@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, getAuth, DashboardStats } from "@/lib/api";
+import HealthChatbot from "@/components/HealthChatbot";
+import DosageCalculator from "@/components/DosageCalculator";
+import AllergyChecker from "@/components/AllergyChecker";
 
 export default function HomePage() {
   const router = useRouter();
@@ -13,7 +16,7 @@ export default function HomePage() {
   useEffect(() => {
     const auth = getAuth();
     if (!auth) {
-      router.push("/");
+      router.push("/login");
       return;
     }
     setUser(auth);
@@ -172,6 +175,16 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+
+          {/* Dosage Calculator */}
+          <div className="animate-fade-in-up delay-500">
+            <DosageCalculator />
+          </div>
+
+          {/* Allergy Checker */}
+          <div className="animate-fade-in-up delay-500">
+            <AllergyChecker />
+          </div>
         </main>
 
         {/* Footer */}
@@ -185,6 +198,9 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
+
+      {/* Health Chatbot */}
+      <HealthChatbot />
     </div>
   );
 }

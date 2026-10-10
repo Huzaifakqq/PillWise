@@ -9,13 +9,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const auth = getAuth();
-    if (!auth) return router.push("/");
+    if (!auth) return router.push("/login");
     setUser(auth);
   }, [router]);
 
   const handleLogout = () => {
     clearAuth();
-    router.push("/");
+    router.push("/login");
   };
 
   if (!user)

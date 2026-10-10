@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, getAuth, UserMedicine, Interaction } from "@/lib/api";
+import InteractionHeatmap from "@/components/InteractionHeatmap";
 
 export default function CheckerPage() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function CheckerPage() {
 
   useEffect(() => {
     const auth = getAuth();
-    if (!auth) return router.push("/");
+    if (!auth) return router.push("/login");
     api.getUserMedicines(auth.id)
       .then(setMedicines)
       .catch(console.error)
@@ -178,6 +179,22 @@ export default function CheckerPage() {
                   </button>
                 ))}
               </div>
+
+              {/* Interaction Heatmap */}
+              {medicines.length >= 2 && (
+                <div className="animate-fade-in-up">
+                  <InteractionHeatmap
+                    data={{
+                      medicines: medicines.map((m) => ({ id: m.id, name: m.medicineName })),
+                      interactions: results.map((r) => ({
+                        med1Id: medicines.find((m) => m.medicineName === r.medicine1Name)?.id || 0,
+                        med2Id: medicines.find((m) => m.medicineName === r.medicine2Name)?.id || 0,
+                        severity: r.severity,
+                      })),
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Check Button */}
               <button
