@@ -1,0 +1,6 @@
+@PillWise.API_HostAddress = http://localhost:5198
+
+GET {{PillWise.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
