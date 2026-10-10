@@ -27,6 +27,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       className="glass-card w-10 h-10 rounded-xl flex items-center justify-center text-lg hover:bg-slate-800/60 transition-all"
       title={dark ? "Switch to light mode" : "Switch to dark mode"}
     >

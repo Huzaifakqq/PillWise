@@ -120,6 +120,20 @@ app.MapGet("/api/health", () => new
 // Simple API docs endpoint
 app.MapGet("/api", () => Results.Redirect("/swagger"));
 
+// Ensure schema + seed on fresh databases (Docker / cloud deploys)
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<PillWiseDbContext>();
+        await DbSeeder.InitializeAsync(db);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Database initialization skipped/failed");
+    }
+}
+
 app.Run();
 
 

@@ -6,6 +6,7 @@ import { api, Medicine, Category } from "@/lib/api";
 import { VoiceInput } from "@/components/ShareVoice";
 import { MedicineComparison } from "@/components/MedicineTools";
 import { getMedicineIcon } from "@/lib/medicine-icons";
+import PillVisual from "@/components/PillVisual";
 import { SkeletonMedicineCard } from "@/components/Skeletons";
 
 function SearchContent() {
@@ -65,13 +66,22 @@ function SearchContent() {
               <h1 className="text-xl font-bold text-white">Search Medicines</h1>
               <p className="text-xs text-slate-500">Find any medicine in our database</p>
             </div>
-            <Link href="/checker" className="btn-primary px-4 py-2 rounded-xl text-sm text-white font-medium flex items-center gap-2">
-              ⚡ Check
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/scan"
+                aria-label="Scan medicine barcode"
+                className="glass-card p-2.5 rounded-xl text-sm hover:bg-slate-800/60 transition-all"
+              >
+                📷
+              </Link>
+              <Link href="/checker" className="btn-primary px-4 py-2 rounded-xl text-sm text-white font-medium flex items-center gap-2">
+                ⚡ Check
+              </Link>
+            </div>
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <main id="main-content" className="max-w-4xl mx-auto px-4 py-6 space-y-6">
           {/* Search Input with Voice */}
           <div className="flex gap-3 animate-fade-in-up">
             <div className="glass-card p-2 flex items-center gap-3 focus-within:border-blue-500/50 transition-all flex-1">
@@ -80,7 +90,8 @@ function SearchContent() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Type medicine name..."
+                placeholder="Type medicine name... (try 'panadl' — fuzzy search!)"
+                aria-label="Search medicines by name"
                 className="flex-1 bg-transparent text-white placeholder-slate-500 focus:outline-none py-3 text-lg"
                 autoFocus
               />
@@ -206,7 +217,7 @@ function SearchContent() {
                   >
                     <div className="flex items-start gap-4">
                       <div className={`w-14 h-14 bg-gradient-to-br ${medIcon.gradient} rounded-xl flex items-center justify-center flex-shrink-0 border border-white/10`}>
-                        <span className="text-3xl">{medIcon.emoji}</span>
+                        <PillVisual name={med.name} category={med.categoryName} size={40} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1">

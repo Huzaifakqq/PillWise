@@ -6,6 +6,10 @@ PillWise is a medicine safety app that checks if your medicines are safe to take
 
 Built for **Islamabad Hack 2026** — Community & Society Track
 
+![PillWise Architecture](docs/architecture.svg)
+
+> **Demo:** see [DEMO.md](DEMO.md) for the 4-minute pitch script · **Kiro:** see [KIRO.md](KIRO.md) for our AI workflow
+
 ## 🎯 Problem
 
 Every year, thousands die from preventable medicine interactions. In Pakistan:
@@ -16,8 +20,12 @@ Every year, thousands die from preventable medicine interactions. In Pakistan:
 ## ✅ Solution
 
 PillWise lets users:
-- 🔍 Search 50+ medicines by name or category (with voice input)
-- ⚡ Select multiple medicines and check interactions instantly
+- 🔍 Search 79 medicines by name or category (with voice input + **fuzzy search** — "panadl" still finds Panadol)
+- 📷 **Barcode scanner** — point camera at a medicine box to identify it instantly
+- ⚡ Select multiple medicines and check interactions instantly (radar scan + confetti)
+- 🔗 **Share Card** — export any result as a 1080×1080 PNG for family WhatsApp groups
+- ⏰ **Dose reminders** via browser notifications
+- 💊 Animated pill/capsule visuals per medicine
 - 🤖 AI health chatbot for medicine questions
 - 👤 Track personal medicine list
 - 👨‍👩‍👧 Manage family members' medicines separately
@@ -28,6 +36,8 @@ PillWise lets users:
 - 📄 Export reports as PDF
 - 🌐 English + Urdu (اردو) language toggle
 - 📱 PWA — installable, works offline
+- ☀️ **Light/dark theme** toggle + **accessible** (skip-link, aria-labels, keyboard nav)
+- 🐳 **Docker Compose** — one command runs SQL Server + API + frontend
 - 🗣️ Voice search & share results
 - 🩺 Doctor Mode — printable summary for consultations
 - 🧪 Demo mode & statistics dashboard
@@ -69,6 +79,16 @@ Frontend runs at: `http://localhost:3000`
 
 ### Database
 Connect to SQL Server and run the SQL scripts in `database/` folder.
+A fresh database is auto-created and seeded on first API start (`Data/DbSeeder.cs`).
+
+### Docker (all-in-one)
+```bash
+docker compose up --build
+```
+Frontend: `http://localhost:3000` · API: `http://localhost:5198/swagger` · SQL: `localhost,1433`
+
+### Cloud deploy
+See [docs/AZURE_DEPLOY.md](docs/AZURE_DEPLOY.md) for Azure + Vercel setup.
 
 ## 📁 Project Structure
 

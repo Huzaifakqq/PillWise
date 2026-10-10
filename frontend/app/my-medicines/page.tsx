@@ -85,7 +85,7 @@ export default function MyMedicinesPage() {
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <main id="main-content" className="max-w-4xl mx-auto px-4 py-6 space-y-6">
           {/* Add Modal */}
           {showAdd && (
             <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">

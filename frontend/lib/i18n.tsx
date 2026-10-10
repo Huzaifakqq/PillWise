@@ -169,19 +169,28 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("pillwise-lang") as Language;
-    if (saved) setLangState(saved);
+    if (saved) {
+      setLangState(saved);
+      applyLang(saved);
+    }
   }, []);
+
+  const applyLang = (l: Language) => {
+    if (l === "ur") {
+      document.documentElement.dir = "rtl";
+      document.documentElement.lang = "ur";
+      document.documentElement.classList.add("urdu");
+    } else {
+      document.documentElement.dir = "ltr";
+      document.documentElement.lang = "en";
+      document.documentElement.classList.remove("urdu");
+    }
+  };
 
   const setLang = (l: Language) => {
     setLangState(l);
     localStorage.setItem("pillwise-lang", l);
-    if (l === "ur") {
-      document.documentElement.dir = "rtl";
-      document.documentElement.lang = "ur";
-    } else {
-      document.documentElement.dir = "ltr";
-      document.documentElement.lang = "en";
-    }
+    applyLang(l);
   };
 
   const t = (key: keyof typeof translations.en) => {

@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { api, getAuth, UserMedicine, Interaction } from "@/lib/api";
 import InteractionHeatmap from "@/components/InteractionHeatmap";
 import { RadarScanner, Confetti, PulseShield } from "@/components/Visuals";
+import { ShareCardButton } from "@/components/ShareCard";
+import PillVisual from "@/components/PillVisual";
 
 export default function CheckerPage() {
   const router = useRouter();
@@ -82,7 +84,7 @@ export default function CheckerPage() {
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <main id="main-content" className="max-w-4xl mx-auto px-4 py-6 space-y-6">
           {/* Instructions */}
           <div className="glass-card p-5 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 border-blue-500/20 animate-fade-in-up">
             <div className="flex items-start gap-4">
@@ -164,7 +166,7 @@ export default function CheckerPage() {
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       selected.includes(med.id) ? "bg-blue-500/10 border border-blue-500/20" : "bg-slate-800/60"
                     }`}>
-                      <span className="text-2xl">💊</span>
+                      <PillVisual name={med.medicineName} size={34} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-white">{med.medicineName}</p>
@@ -296,6 +298,11 @@ export default function CheckerPage() {
                         </div>
                       );
                     })}
+                  </div>
+
+                  {/* Share */}
+                  <div className="flex justify-center pt-2">
+                    <ShareCardButton results={results} userName={getAuth()?.name} />
                   </div>
 
                   {/* Disclaimer */}

@@ -109,7 +109,7 @@ function MedicineContent() {
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <main id="main-content" className="max-w-4xl mx-auto px-4 py-6 space-y-6">
           {/* Medicine Info Card */}
           <div className="glass-card p-6 md:p-8 animate-fade-in-up relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />

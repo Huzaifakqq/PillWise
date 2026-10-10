@@ -2,29 +2,42 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "./Toast";
-
-const DEMO_USER = {
-  id: 999,
-  name: "Demo User",
-  email: "demo@pillwise.pk",
-};
+import { api, saveAuth } from "@/lib/api";
 
 export function DemoModeButton() {
   const router = useRouter();
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
-  const startDemo = () => {
-    localStorage.setItem("pillwise-auth", JSON.stringify(DEMO_USER));
-    toast("Demo mode activated! Explore PillWise freely.", "success", "🎮");
-    router.push("/home");
+  const startDemo = async () => {
+    setLoading(true);
+    try {
+      const auth = await api.seedDemo();
+      saveAuth(auth);
+      toast(`Welcome, ${auth.name}! Demo data loaded.`, "success", "🎮");
+      router.push("/home");
+    } catch {
+      saveAuth({ id: 999, name: "Demo User", email: "demo@pillwise.pk", token: "" });
+      toast("Demo mode (offline preview) activated.", "info", "🎮");
+      router.push("/home");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <button
       onClick={startDemo}
-      className="glass-card px-5 py-2.5 text-sm text-slate-300 hover:text-white rounded-xl flex items-center gap-2 transition-all border border-purple-500/20 hover:border-purple-500/40"
+      disabled={loading}
+      aria-label="Start guided demo with sample data"
+      className="glass-card px-5 py-2.5 text-sm text-slate-300 hover:text-white rounded-xl flex items-center gap-2 transition-all border border-purple-500/20 hover:border-purple-500/40 disabled:opacity-60"
     >
-      <span>🎮</span> Demo Mode
+      {loading ? (
+        <span className="animate-spin-slow inline-block w-4 h-4 border-2 border-purple-400/40 border-t-purple-400 rounded-full" />
+      ) : (
+        <span>🎮</span>
+      )}
+      {loading ? "Loading..." : "Live Demo"}
     </button>
   );
 }

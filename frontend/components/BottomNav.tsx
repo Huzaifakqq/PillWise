@@ -17,7 +17,7 @@ export default function BottomNav() {
   if (hideOnPages.includes(pathname)) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden glass-card border-0 border-t border-slate-800/50 rounded-none">
+    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-40 md:hidden glass-card border-0 border-t border-slate-800/50 rounded-none">
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -25,6 +25,8 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              aria-label={item.label}
+              aria-current={isActive ? "page" : undefined}
               className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all min-w-[56px] ${
                 isActive
                   ? "text-blue-400"

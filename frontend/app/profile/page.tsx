@@ -42,7 +42,7 @@ export default function ProfilePage() {
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+        <main id="main-content" className="max-w-4xl mx-auto px-4 py-8 space-y-8">
           {/* Profile Card */}
           <div className="glass-card p-8 text-center animate-fade-in-up relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-glow" />

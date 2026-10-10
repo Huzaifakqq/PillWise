@@ -55,6 +55,9 @@ export const api = {
   // Dashboard
   getDashboardStats: (userId: number) => request<DashboardStats>(`/dashboard/stats?userId=${userId}`),
 
+  // Demo
+  seedDemo: () => request<AuthResponse>("/demo/seed", { method: "POST" }),
+
   // Side Effects
   reportSideEffect: (data: { userId: number; medicineId: number; description?: string; severity?: string }) =>
     request<any>("/sideeffects", { method: "POST", body: JSON.stringify(data) }),

@@ -108,7 +108,7 @@ export default function FamilyPage() {
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <main id="main-content" className="max-w-4xl mx-auto px-4 py-6 space-y-6">
           {/* Member Medicines View */}
           {selectedMember ? (
             <div className="space-y-4 animate-fade-in">

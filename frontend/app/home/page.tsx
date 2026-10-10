@@ -19,6 +19,7 @@ import HealthScore from "@/components/HealthScore";
 import { SafetyDonut, WeeklyActivityChart, CategoryBars } from "@/components/Charts";
 import { AuroraBg, ParticleField } from "@/components/Visuals";
 import { CountUp } from "@/components/ScrollReveal";
+import DoseReminders from "@/components/DoseReminders";
 
 export default function HomePage() {
   const router = useRouter();
@@ -109,7 +110,7 @@ export default function HomePage() {
           </div>
         </header>
 
-        <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <main id="main-content" className="max-w-5xl mx-auto px-4 py-8 space-y-8">
           {/* Hero Greeting */}
           <div className="animate-fade-in-up">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
@@ -218,10 +219,19 @@ export default function HomePage() {
               href="/search"
               icon="🔍"
               title="Browse Medicines"
-              desc="Search 50+ medicines in our database"
+              desc="Search 79 medicines in our database"
               gradient="from-blue-500/10 to-blue-900/10"
               borderColor="border-blue-500/20 hover:border-blue-500/50"
               delay="400"
+            />
+            <ActionCard
+              href="/scan"
+              icon="📷"
+              title="Scan Medicine Box"
+              desc="Point camera at a barcode to identify a medicine"
+              gradient="from-cyan-500/10 to-cyan-900/10"
+              borderColor="border-cyan-500/20 hover:border-cyan-500/50"
+              delay="500"
             />
           </div>
 
@@ -265,6 +275,13 @@ export default function HomePage() {
               warnings={stats?.activeWarnings || 0}
             />
           </div>
+
+          {/* Dose Reminders */}
+          {userMeds.length > 0 && (
+            <div className="animate-fade-in-up delay-500">
+              <DoseReminders medicines={userMeds.map((m: any) => ({ name: m.medicineName, timing: m.timing, dosage: m.dosage }))} />
+            </div>
+          )}
 
           {/* Timeline */}
           {userMeds.length > 0 && (
