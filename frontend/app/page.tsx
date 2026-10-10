@@ -5,6 +5,8 @@ import Link from "next/link";
 import { getAuth } from "@/lib/api";
 import { DemoModeButton } from "@/components/DemoStats";
 import { LanguageToggle, useI18n } from "@/lib/i18n";
+import { ParticleField, AuroraBg, Marquee, FloatingPill } from "@/components/Visuals";
+import { Reveal, CountUp } from "@/components/ScrollReveal";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -85,6 +87,10 @@ export default function LandingPage() {
           <div className="absolute bottom-32 right-1/4 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl animate-float" style={{ animationDelay: "1s" }} />
           <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} />
         </div>
+        <ParticleField count={38} />
+        <FloatingPill className="top-24 left-[8%] opacity-60 hidden lg:block" delay={0} />
+        <FloatingPill className="bottom-32 right-[10%] opacity-50 hidden lg:block" delay={2.5} />
+        <FloatingPill className="top-40 right-[22%] opacity-40 hidden xl:block" delay={1.2} />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 grid lg:grid-cols-2 gap-12 items-center w-full">
           <div>
@@ -145,7 +151,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 rounded-xl severity-safe">
+                  <div className="flex items-center gap-4 p-4 rounded-xl severity-safe animate-fade-in-up" style={{ animationDelay: "300ms" }}>
                     <span className="text-3xl">💊</span>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
@@ -156,7 +162,7 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 p-4 rounded-xl severity-mild">
+                  <div className="flex items-center gap-4 p-4 rounded-xl severity-mild animate-fade-in-up" style={{ animationDelay: "700ms" }}>
                     <span className="text-3xl">💊</span>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
@@ -167,12 +173,12 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 p-4 rounded-xl severity-dangerous">
+                  <div className="flex items-center gap-4 p-4 rounded-xl severity-dangerous animate-fade-in-up" style={{ animationDelay: "1100ms" }}>
                     <span className="text-3xl">💊</span>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-white">Aspirin + Warfarin</span>
-                        <span className="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30">Dangerous</span>
+                        <span className="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30 animate-pulse">Dangerous</span>
                       </div>
                       <p className="text-sm text-slate-400 mt-1">Risk of internal bleeding - avoid combination</p>
                     </div>
@@ -208,23 +214,50 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="glass-card p-6 text-center animate-fade-in-up">
-              <div className="text-4xl font-bold text-red-400 mb-2">30%</div>
-              <div className="text-sm text-slate-400">of adverse drug events are preventable</div>
-            </div>
-            <div className="glass-card p-6 text-center animate-fade-in-up delay-100">
-              <div className="text-4xl font-bold text-yellow-400 mb-2">1 in 5</div>
-              <div className="text-sm text-slate-400">Pakistan medicines are substandard</div>
-            </div>
-            <div className="glass-card p-6 text-center animate-fade-in-up delay-200">
-              <div className="text-4xl font-bold text-blue-400 mb-2">5+</div>
-              <div className="text-sm text-slate-400">medicines average elderly patient takes daily</div>
-            </div>
-            <div className="glass-card p-6 text-center animate-fade-in-up delay-300">
-              <div className="text-4xl font-bold text-green-400 mb-2">100K+</div>
-              <div className="text-sm text-slate-400">deaths yearly from drug interactions (US)</div>
-            </div>
+            <Reveal delay={0}>
+              <div className="glass-card p-6 text-center card-tilt h-full">
+                <div className="text-4xl font-bold text-red-400 mb-2 text-glow">
+                  <CountUp to={30} suffix="%" />
+                </div>
+                <div className="text-sm text-slate-400">of adverse drug events are preventable</div>
+              </div>
+            </Reveal>
+            <Reveal delay={100}>
+              <div className="glass-card p-6 text-center card-tilt h-full">
+                <div className="text-4xl font-bold text-yellow-400 mb-2">1 in 5</div>
+                <div className="text-sm text-slate-400">Pakistan medicines are substandard</div>
+              </div>
+            </Reveal>
+            <Reveal delay={200}>
+              <div className="glass-card p-6 text-center card-tilt h-full">
+                <div className="text-4xl font-bold text-blue-400 mb-2 text-glow">
+                  <CountUp to={5} suffix="+" />
+                </div>
+                <div className="text-sm text-slate-400">medicines average elderly patient takes daily</div>
+              </div>
+            </Reveal>
+            <Reveal delay={300}>
+              <div className="glass-card p-6 text-center card-tilt h-full">
+                <div className="text-4xl font-bold text-green-400 mb-2 text-glow-green">
+                  <CountUp to={100} suffix="K+" />
+                </div>
+                <div className="text-sm text-slate-400">deaths yearly from drug interactions (US)</div>
+              </div>
+            </Reveal>
           </div>
+
+          <Reveal delay={200} className="mt-12">
+            <p className="text-center text-xs text-slate-600 uppercase tracking-widest mb-1">
+              Medicines in our database
+            </p>
+            <Marquee
+              items={[
+                "💊 Panadol", "💊 Brufen", "💊 Augmentin", "💊 Disprin", "💊 Ponstan",
+                "💊 Nexum", "💊 Glucophage", "💊 Lipitor", "💊 Amoxil", "💊 Zinnat",
+                "💊 Risek", "💊 Velosef", "💊 Celebrex", "💊 Plavix", "💊 Lasix",
+              ]}
+            />
+          </Reveal>
         </div>
       </section>
 
@@ -241,50 +274,52 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <FeatureCard
-              icon="⚡"
-              title="Instant Interaction Check"
-              desc="Select multiple medicines and see instant safety results with severity ratings and advice."
-              color="red"
-              delay="0"
-            />
-            <FeatureCard
-              icon="🔍"
-              title="Medicine Search"
-              desc="Search 50+ medicines by name, category, or purpose. Complete details including side effects."
-              color="blue"
-              delay="100"
-            />
-            <FeatureCard
-              icon="👨‍👩‍👧"
-              title="Family Management"
-              desc="Track medicines for each family member separately. Perfect for elderly parents and children."
-              color="purple"
-              delay="200"
-            />
-            <FeatureCard
-              icon="📊"
-              title="Safety Dashboard"
-              desc="At-a-glance view of your medicine safety score, warnings, and family health overview."
-              color="green"
-              delay="300"
-            />
-            <FeatureCard
-              icon="🤖"
-              title="AI Health Assistant"
-              desc="Ask any health question in natural language and get instant, accurate answers."
-              color="blue"
-              delay="400"
-            />
-            <FeatureCard
-              icon="📄"
-              title="PDF Export"
-              desc="Export your medicine list as a professional PDF to share with your doctor."
-              color="green"
-              delay="500"
-            />
-          </div>
+          <Reveal>
+            <div className="grid md:grid-cols-3 gap-6">
+              <FeatureCard
+                icon="⚡"
+                title="Instant Interaction Check"
+                desc="Select multiple medicines and see instant safety results with severity ratings and advice."
+                color="red"
+                delay="0"
+              />
+              <FeatureCard
+                icon="🔍"
+                title="Medicine Search"
+                desc="Search 50+ medicines by name, category, or purpose. Complete details including side effects."
+                color="blue"
+                delay="100"
+              />
+              <FeatureCard
+                icon="👨‍👩‍👧"
+                title="Family Management"
+                desc="Track medicines for each family member separately. Perfect for elderly parents and children."
+                color="purple"
+                delay="200"
+              />
+              <FeatureCard
+                icon="📊"
+                title="Safety Dashboard"
+                desc="At-a-glance view of your medicine safety score, warnings, and family health overview."
+                color="green"
+                delay="300"
+              />
+              <FeatureCard
+                icon="🤖"
+                title="AI Health Assistant"
+                desc="Ask any health question in natural language and get instant, accurate answers."
+                color="blue"
+                delay="400"
+              />
+              <FeatureCard
+                icon="📄"
+                title="PDF Export"
+                desc="Export your medicine list as a professional PDF to share with your doctor."
+                color="green"
+                delay="500"
+              />
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -312,19 +347,21 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="py-20 border-t border-slate-800/50 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-indigo-950/20 to-slate-950" />
+        <AuroraBg />
+        <ParticleField count={20} />
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <div className="text-6xl mb-6 animate-float">💊</div>
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            Ready to Be <span className="gradient-text">Wise</span>?
+            Ready to Be <span className="gradient-text text-glow">Wise</span>?
           </h2>
           <p className="text-lg text-slate-400 mb-8 max-w-2xl mx-auto">
             Join thousands who trust PillWise to keep their family safe from dangerous medicine interactions.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="btn-primary px-10 py-4 text-white font-bold rounded-xl text-lg">
+            <Link href="/register" className="btn-primary px-10 py-4 text-white font-bold rounded-xl text-lg animate-pulse-glow">
               Get Started Free →
             </Link>
-            <Link href="/" className="glass-card px-10 py-4 text-slate-300 font-medium rounded-xl text-lg hover:bg-slate-800/60 transition-all">
+            <Link href="/login" className="glass-card px-10 py-4 text-slate-300 font-medium rounded-xl text-lg hover:bg-slate-800/60 transition-all card-tilt">
               Sign In
             </Link>
           </div>
@@ -348,7 +385,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-6 text-sm text-slate-500">
               <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
-              <Link href="/" className="hover:text-white transition-colors">Sign In</Link>
+              <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
             </div>
             <p className="text-sm text-slate-600">© 2026 PillWise. Built at Islamabad Hack.</p>
           </div>
@@ -370,10 +407,10 @@ function FeatureCard({ icon, title, desc, color, delay }: {
 
   return (
     <div
-      className={`glass-card bg-gradient-to-br ${colors[color]} p-6 animate-fade-in-up transition-all hover:-translate-y-1`}
+      className={`glass-card bg-gradient-to-br ${colors[color]} p-6 card-tilt animate-fade-in-up`}
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 mb-4 text-3xl">
+      <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 mb-4 text-3xl group-hover:scale-110 transition-transform animate-wiggle">
         {icon}
       </div>
       <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
@@ -386,16 +423,17 @@ function StepCard({ number, icon, title, desc, delay }: {
   number: string; icon: string; title: string; desc: string; delay: string;
 }) {
   return (
-    <div className="text-center animate-fade-in-up relative" style={{ animationDelay: `${delay}ms` }}>
+    <div className="text-center animate-fade-in-up relative group" style={{ animationDelay: `${delay}ms` }}>
       <div className="w-20 h-20 mx-auto mb-6 relative z-10">
-        <div className="w-full h-full glass-card rounded-2xl flex items-center justify-center text-3xl border-blue-500/30">
+        <span className="absolute inset-0 rounded-2xl border border-blue-400/40 animate-[pulseRing_2.2s_ease-out_infinite]" />
+        <div className="w-full h-full glass-card rounded-2xl flex items-center justify-center text-3xl border-blue-500/30 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
           {icon}
         </div>
-        <div className="absolute -top-3 -right-3 w-8 h-8 bg-gradient-medical rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/30">
+        <div className="absolute -top-3 -right-3 w-8 h-8 bg-gradient-medical rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/30 animate-bounce-in" style={{ animationDelay: `${Number(delay) + 300}ms` }}>
           {number}
         </div>
       </div>
-      <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+      <h3 className="text-xl font-bold text-white mb-3 transition-colors group-hover:text-blue-300">{title}</h3>
       <p className="text-slate-400 text-sm leading-relaxed max-w-xs mx-auto">{desc}</p>
     </div>
   );

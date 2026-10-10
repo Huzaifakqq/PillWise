@@ -31,6 +31,8 @@ PillWise lets users:
 - 🗣️ Voice search & share results
 - 🩺 Doctor Mode — printable summary for consultations
 - 🧪 Demo mode & statistics dashboard
+- 📈 Live charts (safety donut, weekly activity, medicine type breakdown)
+- ✨ Rich animations — page transitions, scroll reveals, animated counters, radar scanner, confetti, aurora backgrounds, 3D tilt cards
 
 ## 🛠️ Tech Stack
 

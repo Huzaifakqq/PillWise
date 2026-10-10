@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, getAuth, DashboardStats } from "@/lib/api";
@@ -15,6 +15,10 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { LanguageToggle, useI18n } from "@/lib/i18n";
 import { useToast } from "@/components/Toast";
 import { SkeletonStats } from "@/components/Skeletons";
+import HealthScore from "@/components/HealthScore";
+import { SafetyDonut, WeeklyActivityChart, CategoryBars } from "@/components/Charts";
+import { AuroraBg, ParticleField } from "@/components/Visuals";
+import { CountUp } from "@/components/ScrollReveal";
 
 export default function HomePage() {
   const router = useRouter();
@@ -45,6 +49,19 @@ export default function HomePage() {
     router.push(`/search?q=${encodeURIComponent(search)}`);
   };
 
+  const categoryBreakdown = useMemo(() => {
+    const palette = ["#0ea5e9", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"];
+    const counts: Record<string, number> = {};
+    userMeds.forEach((m) => {
+      const key = m.medicineForm || "Other";
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, count], i) => ({ name, count, color: palette[i % palette.length] }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+  }, [userMeds]);
+
   if (!user)
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950">
@@ -56,8 +73,10 @@ export default function HomePage() {
   const safeScore = stats ? (stats.activeWarnings === 0 ? 100 : Math.max(0, 100 - stats.activeWarnings * 25)) : 100;
 
   return (
-    <div className="min-h-screen bg-slate-950 bg-grid">
-      <div className="min-h-screen bg-gradient-to-b from-blue-950/30 via-transparent to-slate-950">
+    <div className="min-h-screen bg-slate-950 bg-grid relative">
+      <AuroraBg />
+      <ParticleField count={18} />
+      <div className="min-h-screen bg-gradient-to-b from-blue-950/30 via-transparent to-slate-950 relative z-10">
         {/* Header */}
         <header className="glass-card border-0 border-b border-slate-800/50 sticky top-0 z-50 rounded-none">
           <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -102,14 +121,18 @@ export default function HomePage() {
                 <p className="text-slate-400 mt-2">Let&apos;s make sure your medicines are safe today</p>
               </div>
 
-              {/* Safety Score Badge */}
-              <div className={`glass-card px-6 py-4 flex items-center gap-4 ${safeScore >= 80 ? "border-green-500/30" : safeScore >= 50 ? "border-yellow-500/30" : "border-red-500/30 animate-pulse-glow"}`}>
-                <div className={`text-3xl font-bold ${safeScore >= 80 ? "text-green-400" : safeScore >= 50 ? "text-yellow-400" : "text-red-400"}`}>
-                  {safeScore}
-                </div>
+              {/* Safety Score Gauge */}
+              <div className={`glass-card px-6 py-5 flex items-center gap-5 ${safeScore >= 80 ? "border-green-500/30" : safeScore >= 50 ? "border-yellow-500/30" : "border-red-500/30 animate-pulse-glow"}`}>
+                <HealthScore score={safeScore} size={104} stroke={9} />
                 <div>
                   <div className="text-sm font-semibold text-white">Safety Score</div>
-                  <div className="text-xs text-slate-400">{safeScore >= 80 ? "Great condition!" : safeScore >= 50 ? "Needs attention" : "Action required"}</div>
+                  <div className="text-xs text-slate-400 mt-1">
+                    {safeScore >= 80 ? "Great condition! 🎉" : safeScore >= 50 ? "Needs attention" : "Action required ⚠️"}
+                  </div>
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Updated live
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,6 +164,24 @@ export default function HomePage() {
               <StatCard icon="⚠️" label="Warnings" value={stats?.activeWarnings ?? 0} color={stats?.activeWarnings ? "red" : "green"} delay="200" />
               <StatCard icon="👨‍👩‍👧" label="Family" value={stats?.familyMembers ?? 0} color="purple" delay="300" />
               <StatCard icon="✅" label="Safe Score" value={safeScore} color="green" delay="400" />
+            </div>
+          )}
+
+          {/* Charts & Insights */}
+          {!loadingStats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in-up delay-200">
+              <SafetyDonut
+                safe={Math.max((stats?.totalMedicines ?? 0) - (stats?.activeWarnings ?? 0), 0)}
+                warnings={stats?.activeWarnings ?? 0}
+              />
+              <WeeklyActivityChart />
+            </div>
+          )}
+
+          {/* Category Breakdown */}
+          {!loadingStats && userMeds.length >= 2 && (
+            <div className="animate-fade-in-up delay-300">
+              <CategoryBars data={categoryBreakdown} />
             </div>
           )}
 
@@ -285,14 +326,16 @@ function StatCard({ icon, label, value, color, delay }: { icon: string; label: s
   };
   const c = colors[color];
   return (
-    <div className={`glass-card bg-gradient-to-br ${c.bg} p-5 animate-fade-in-up delay-${delay}`}>
+    <div className={`glass-card bg-gradient-to-br ${c.bg} p-5 animate-fade-in-up delay-${delay} card-tilt`}>
       <div className="flex items-center gap-3 mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${c.icon}`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${c.icon} transition-transform duration-300 hover:scale-125 hover:rotate-6`}>
           <span className="text-xl">{icon}</span>
         </div>
         <span className="text-xs text-slate-400 font-medium">{label}</span>
       </div>
-      <div className={`text-3xl font-bold ${c.value}`}>{value}</div>
+      <div className={`text-3xl font-bold ${c.value}`}>
+        <CountUp to={value} duration={1100} />
+      </div>
     </div>
   );
 }
@@ -303,7 +346,7 @@ function ActionCard({ href, icon, title, desc, gradient, borderColor, delay }: {
   return (
     <Link
       href={href}
-      className={`glass-card bg-gradient-to-br ${gradient} border ${borderColor} p-6 group animate-fade-in-up delay-${delay} transition-all hover:-translate-y-1`}
+      className={`glass-card bg-gradient-to-br ${gradient} border ${borderColor} p-6 group animate-fade-in-up delay-${delay} card-tilt`}
     >
       <div className="flex items-start gap-4">
         <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">

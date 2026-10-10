@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, getAuth, UserMedicine, Interaction } from "@/lib/api";
 import InteractionHeatmap from "@/components/InteractionHeatmap";
+import { RadarScanner, Confetti, PulseShield } from "@/components/Visuals";
 
 export default function CheckerPage() {
   const router = useRouter();
@@ -218,20 +219,25 @@ export default function CheckerPage() {
                 )}
               </button>
 
+              {/* Scanning Radar */}
+              {checking && (
+                <RadarScanner label={`Scanning ${selected.length} medicines against 30 known interactions...`} />
+              )}
+
               {/* Results */}
               {hasChecked && (
                 <div className="space-y-4 animate-fade-in-up">
                   {/* Summary */}
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="glass-card p-4 text-center severity-safe">
+                    <div className="glass-card p-4 text-center severity-safe animate-bounce-in" style={{ animationDelay: "0ms" }}>
                       <div className="text-3xl font-bold text-green-400">{safeCount}</div>
                       <div className="text-xs text-green-400/80 font-medium mt-1">✓ Safe</div>
                     </div>
-                    <div className="glass-card p-4 text-center severity-mild">
+                    <div className="glass-card p-4 text-center severity-mild animate-bounce-in" style={{ animationDelay: "120ms" }}>
                       <div className="text-3xl font-bold text-yellow-400">{mildCount}</div>
                       <div className="text-xs text-yellow-400/80 font-medium mt-1">⚠ Mild</div>
                     </div>
-                    <div className="glass-card p-4 text-center severity-dangerous">
+                    <div className="glass-card p-4 text-center severity-dangerous animate-bounce-in" style={{ animationDelay: "240ms" }}>
                       <div className="text-3xl font-bold text-red-400">{dangerCount}</div>
                       <div className="text-xs text-red-400/80 font-medium mt-1">✕ Dangerous</div>
                     </div>
@@ -239,16 +245,21 @@ export default function CheckerPage() {
 
                   {/* Overall Warning */}
                   {dangerCount > 0 ? (
-                    <div className="glass-card p-6 text-center border-2 border-red-500/50 animate-shake bg-gradient-to-b from-red-500/10 to-transparent">
-                      <div className="text-6xl mb-3">🚨</div>
-                      <p className="text-red-400 font-bold text-2xl mb-1">DANGEROUS INTERACTION!</p>
+                    <div className="relative overflow-hidden glass-card p-6 text-center border-2 border-red-500/50 animate-shake bg-gradient-to-b from-red-500/10 to-transparent">
+                      <div className="flex justify-center mb-3">
+                        <PulseShield danger />
+                      </div>
+                      <p className="text-red-400 font-bold text-2xl mb-1 text-glow">DANGEROUS INTERACTION!</p>
                       <p className="text-slate-400 text-sm">Consult your doctor immediately</p>
                     </div>
                   ) : mildCount === 0 ? (
-                    <div className="glass-card p-6 text-center border border-green-500/30 bg-gradient-to-b from-green-500/5 to-transparent">
-                      <div className="text-6xl mb-3">✅</div>
-                      <p className="text-green-400 font-bold text-xl mb-1">All Safe!</p>
-                      <p className="text-slate-400 text-sm">These medicines are safe to take together</p>
+                    <div className="relative overflow-hidden glass-card p-6 text-center border border-green-500/30 bg-gradient-to-b from-green-500/5 to-transparent glow-ring">
+                      <Confetti />
+                      <div className="flex justify-center mb-3 relative z-10">
+                        <PulseShield />
+                      </div>
+                      <p className="text-green-400 font-bold text-xl mb-1 text-glow-green relative z-10">All Safe!</p>
+                      <p className="text-slate-400 text-sm relative z-10">These medicines are safe to take together</p>
                     </div>
                   ) : null}
 
@@ -258,7 +269,7 @@ export default function CheckerPage() {
                     {results.map((result, idx) => {
                       const styles = getSeverityStyles(result.severity);
                       return (
-                        <div key={idx} className={`glass-card rounded-xl p-5 ${styles.bg}`} style={{ animationDelay: `${idx * 100}ms` }}>
+                        <div key={idx} className={`glass-card rounded-xl p-5 ${styles.bg} animate-bounce-in`} style={{ animationDelay: `${idx * 100}ms` }}>
                           <div className="flex items-center justify-between mb-3">
                             <span className="font-bold text-white flex items-center gap-3 text-lg">
                               <span>{styles.emoji}</span>
@@ -266,7 +277,7 @@ export default function CheckerPage() {
                               <span className="text-slate-500 text-sm">+</span>
                               {result.medicine2Name}
                             </span>
-                            <span className={`text-xs px-4 py-1.5 rounded-full font-bold border ${styles.badge}`}>
+                            <span className={`text-xs px-4 py-1.5 rounded-full font-bold border ${styles.badge} animate-pop`} style={{ animationDelay: `${idx * 100 + 200}ms` }}>
                               {result.severity}
                             </span>
                           </div>

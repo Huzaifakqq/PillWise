@@ -105,6 +105,82 @@ body {
   50% { background-position: 100% 50%; }
 }
 
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.06); }
+  70% { transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes morph {
+  0%, 100% { border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%; transform: rotate(0deg) scale(1); }
+  33% { border-radius: 70% 30% 46% 54% / 30% 60% 40% 70%; transform: rotate(120deg) scale(1.1); }
+  66% { border-radius: 30% 70% 60% 40% / 60% 30% 70% 40%; transform: rotate(240deg) scale(0.95); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.5); }
+}
+
+@keyframes floatX {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(18px, -14px); }
+  50% { transform: translate(-10px, 12px); }
+  75% { transform: translate(-22px, -6px); }
+}
+
+@keyframes glowRing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  50% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+}
+
+@keyframes radarSweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(440px) rotate(720deg); opacity: 0; }
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes drawLine {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
 /* Utility Classes */
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease-out forwards;
@@ -132,6 +208,88 @@ body {
 
 .animate-spin-slow {
   animation: spin 1s linear infinite;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+.animate-pop {
+  animation: pop 0.35s ease-out forwards;
+}
+
+.animate-wiggle:hover {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.animate-morph {
+  animation: morph 10s ease-in-out infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 3.5s ease-in-out infinite;
+}
+
+.animate-float-x {
+  animation: floatX 10s ease-in-out infinite;
+}
+
+.animate-page-in {
+  animation: pageIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.4s ease-out both;
+}
+
+.glow-ring {
+  animation: glowRing 2s ease-out infinite;
+}
+
+.text-glow {
+  text-shadow: 0 0 20px rgba(14, 165, 233, 0.6), 0 0 44px rgba(14, 165, 233, 0.25);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.7), 0 0 44px rgba(16, 185, 129, 0.3);
+}
+
+/* 3D Tilt Card */
+.card-tilt {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+  transform-style: preserve-3d;
+}
+
+.card-tilt:hover {
+  transform: perspective(900px) rotateX(5deg) rotateY(-6deg) translateY(-6px) scale(1.02);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), 0 0 40px rgba(14, 165, 233, 0.12);
+}
+
+/* Marquee edge fade */
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+/* Number ticker underline */
+.ticker-underline {
+  background-image: linear-gradient(90deg, currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  background-position: 0 100%;
+  transition: background-size 0.6s ease 0.3s;
+}
+
+.ticker-underline:hover {
+  background-size: 100% 2px;
 }
 
 /* Staggered animations */
