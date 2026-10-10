@@ -2,6 +2,15 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { api, getAuth } from "@/lib/api";
+import {
+  MedicineAlternatives,
+  MealTimingGuide,
+  PregnancySafety,
+  KidneyLiverWarning,
+} from "@/components/MedicineSafety";
+import { ShareButton } from "@/components/ShareVoice";
+import { getMedicineIcon } from "@/lib/medicine-icons";
+import { useToast } from "@/components/Toast";
 
 interface MedicineDetail {
   medicine: {
@@ -25,6 +34,7 @@ function MedicineContent() {
   const [data, setData] = useState<MedicineDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     api.getMedicine(Number(id))
@@ -35,12 +45,13 @@ function MedicineContent() {
 
   const handleAdd = async () => {
     const auth = getAuth();
-    if (!auth) return router.push("/");
+    if (!auth) return router.push("/login");
     try {
       await api.addUserMedicine({ userId: auth.id, medicineId: Number(id) });
       setAdded(true);
+      toast("Added to My Medicines!", "success", "💊");
     } catch (err) {
-      console.error(err);
+      toast("Failed to add medicine", "error");
     }
   };
 
@@ -91,6 +102,10 @@ function MedicineContent() {
               <h1 className="text-xl font-bold text-white">Medicine Details</h1>
               <p className="text-xs text-slate-500">Complete information and interactions</p>
             </div>
+            <ShareButton
+              title={`PillWise: ${medicine?.name || "Medicine"}`}
+              text={`Check ${medicine?.name} for interactions on PillWise!`}
+            />
           </div>
         </header>
 
@@ -180,6 +195,20 @@ function MedicineContent() {
                 )}
               </button>
             </div>
+          </div>
+
+          {/* Safety Features */}
+          <div className="grid md:grid-cols-2 gap-4 animate-fade-in-up delay-150">
+            <MealTimingGuide medicineName={medicine.name} />
+            <PregnancySafety medicineName={medicine.name} />
+          </div>
+
+          <div className="animate-fade-in-up delay-150">
+            <KidneyLiverWarning medicineName={medicine.name} />
+          </div>
+
+          <div className="animate-fade-in-up delay-150">
+            <MedicineAlternatives medicineName={medicine.name} />
           </div>
 
           {/* Interactions Section */}

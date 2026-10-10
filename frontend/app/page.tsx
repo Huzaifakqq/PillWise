@@ -3,11 +3,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getAuth } from "@/lib/api";
+import { DemoModeButton } from "@/components/DemoStats";
+import { LanguageToggle, useI18n } from "@/lib/i18n";
 
 export default function LandingPage() {
   const router = useRouter();
   const [authenticated, setAuthenticated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     const auth = getAuth();
@@ -32,12 +35,14 @@ export default function LandingPage() {
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
             <a href="#features" className="text-sm text-slate-400 hover:text-white transition-colors">Features</a>
             <a href="#how-it-works" className="text-sm text-slate-400 hover:text-white transition-colors">How It Works</a>
             <a href="#stats" className="text-sm text-slate-400 hover:text-white transition-colors">Statistics</a>
-            <div className="flex items-center gap-3">
-              <Link href="/" className="text-sm text-slate-300 hover:text-white transition-colors px-4 py-2">
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+              <DemoModeButton />
+              <Link href="/login" className="text-sm text-slate-300 hover:text-white transition-colors px-4 py-2">
                 Sign In
               </Link>
               <Link href="/register" className="btn-primary text-sm text-white font-medium px-5 py-2.5 rounded-xl">
@@ -61,7 +66,11 @@ export default function LandingPage() {
             <a href="#how-it-works" className="block py-2 text-slate-300" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
             <a href="#stats" className="block py-2 text-slate-300" onClick={() => setMobileMenuOpen(false)}>Statistics</a>
             <div className="flex gap-3 pt-2">
-              <Link href="/" className="flex-1 text-center py-2.5 glass-card rounded-xl text-slate-300">Sign In</Link>
+              <LanguageToggle />
+              <DemoModeButton />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Link href="/login" className="flex-1 text-center py-2.5 glass-card rounded-xl text-slate-300">Sign In</Link>
               <Link href="/register" className="flex-1 text-center py-2.5 btn-primary rounded-xl text-white font-medium">Get Started</Link>
             </div>
           </div>

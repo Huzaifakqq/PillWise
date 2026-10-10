@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PillWise.API/PillWise.API.csproj" />
+  <Project Path="PillWise.Tests/PillWise.Tests.csproj" />
+</Solution>

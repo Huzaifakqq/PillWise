@@ -9,6 +9,52 @@ interface Message {
   type?: "info" | "warning" | "danger" | "success";
 }
 
+// Real AI integration - add your API key to .env.local as NEXT_PUBLIC_OPENAI_API_KEY
+const AI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+const AI_API_URL = "https://api.openai.com/v1/chat/completions";
+
+async function askAI(question: string, history: Message[]): Promise<string | null> {
+  if (!AI_API_KEY) return null;
+
+  try {
+    const conversation = history.slice(-10).map((m) => ({
+      role: m.role,
+      content: m.text,
+    }));
+
+    const res = await fetch(AI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${AI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are PillWise, a helpful health assistant for a medicine interaction checker app in Pakistan. " +
+              "Answer questions about medicines, drug interactions, side effects, dosage, allergies, and general health. " +
+              "Keep answers concise, accurate, and include a disclaimer to consult healthcare professionals for serious concerns. " +
+              "Use emoji and formatting to make responses engaging. If asked about specific medicine interactions, advise consulting a doctor.",
+          },
+          ...conversation,
+          { role: "user", content: question },
+        ],
+        max_tokens: 500,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || null;
+  } catch {
+    return null;
+  }
+}
+
 export default function HealthChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -33,6 +79,12 @@ export default function HealthChatbot() {
   }, [isOpen]);
 
   const generateResponse = async (question: string): Promise<string> => {
+    // Try real AI first if API key is set
+    if (AI_API_KEY) {
+      const aiResponse = await askAI(question, messages);
+      if (aiResponse) return aiResponse;
+    }
+
     const lower = question.toLowerCase();
 
     // Check for medicine interaction queries

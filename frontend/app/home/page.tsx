@@ -6,12 +6,25 @@ import { api, getAuth, DashboardStats } from "@/lib/api";
 import HealthChatbot from "@/components/HealthChatbot";
 import DosageCalculator from "@/components/DosageCalculator";
 import AllergyChecker from "@/components/AllergyChecker";
+import ExpiryTracker from "@/components/ExpiryTracker";
+import HealthJournal from "@/components/HealthJournal";
+import InteractionTimeline from "@/components/InteractionTimeline";
+import { MedicineReminders, PrintMedicineCard, DoctorMode } from "@/components/MedicineTools";
+import { StatisticsDashboard } from "@/components/DemoStats";
+import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle, useI18n } from "@/lib/i18n";
+import { useToast } from "@/components/Toast";
+import { SkeletonStats } from "@/components/Skeletons";
 
 export default function HomePage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [search, setSearch] = useState("");
+  const [userMeds, setUserMeds] = useState<any[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const { t } = useI18n();
+  const { toast } = useToast();
 
   useEffect(() => {
     const auth = getAuth();
@@ -20,7 +33,11 @@ export default function HomePage() {
       return;
     }
     setUser(auth);
-    api.getDashboardStats(auth.id).then(setStats).catch(console.error);
+    api.getDashboardStats(auth.id).then((s) => {
+      setStats(s);
+      setLoadingStats(false);
+    }).catch(() => setLoadingStats(false));
+    api.getUserMedicines(auth.id).then(setUserMeds).catch(console.error);
   }, [router]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -55,6 +72,8 @@ export default function HomePage() {
             </Link>
 
             <nav className="flex items-center gap-2">
+              <LanguageToggle />
+              <ThemeToggle />
               <Link href="/search" className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 transition-all">
                 🔍 <span>Search</span>
               </Link>
@@ -114,12 +133,16 @@ export default function HomePage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard icon="💊" label="My Medicines" value={stats?.totalMedicines ?? 0} color="blue" delay="100" />
-            <StatCard icon="⚠️" label="Warnings" value={stats?.activeWarnings ?? 0} color={stats?.activeWarnings ? "red" : "green"} delay="200" />
-            <StatCard icon="👨‍👩‍👧" label="Family" value={stats?.familyMembers ?? 0} color="purple" delay="300" />
-            <StatCard icon="✅" label="Safe Score" value={safeScore} color="green" delay="400" />
-          </div>
+          {loadingStats ? (
+            <SkeletonStats />
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard icon="💊" label="My Medicines" value={stats?.totalMedicines ?? 0} color="blue" delay="100" />
+              <StatCard icon="⚠️" label="Warnings" value={stats?.activeWarnings ?? 0} color={stats?.activeWarnings ? "red" : "green"} delay="200" />
+              <StatCard icon="👨‍👩‍👧" label="Family" value={stats?.familyMembers ?? 0} color="purple" delay="300" />
+              <StatCard icon="✅" label="Safe Score" value={safeScore} color="green" delay="400" />
+            </div>
+          )}
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,6 +199,39 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Quick Tools Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in-up delay-500">
+            <MedicineReminders medicines={userMeds.map((m: any) => ({ name: m.medicineName, timing: m.timing, dosage: m.dosage }))} />
+            <div className="glass-card p-5 flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20 text-2xl">🖨️</div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-white text-sm">Emergency Card</h4>
+                <p className="text-xs text-slate-400">Print wallet-size medicine card</p>
+              </div>
+              <PrintMedicineCard
+                userName={user.name}
+                medicines={userMeds.map((m: any) => ({ name: m.medicineName, dosage: m.dosage }))}
+              />
+            </div>
+          </div>
+
+          {/* Doctor Mode + Share */}
+          <div className="flex flex-wrap gap-3 animate-fade-in-up delay-500">
+            <DoctorMode
+              userName={user.name}
+              userEmail={user.email}
+              medicines={userMeds.map((m: any) => ({ name: m.medicineName, dosage: m.dosage, timing: m.timing }))}
+              warnings={stats?.activeWarnings || 0}
+            />
+          </div>
+
+          {/* Timeline */}
+          {userMeds.length > 0 && (
+            <div className="animate-fade-in-up delay-500">
+              <InteractionTimeline medicines={userMeds.map((m: any) => ({ name: m.medicineName, timing: m.timing, dosage: m.dosage }))} />
+            </div>
+          )}
+
           {/* Dosage Calculator */}
           <div className="animate-fade-in-up delay-500">
             <DosageCalculator />
@@ -184,6 +240,21 @@ export default function HomePage() {
           {/* Allergy Checker */}
           <div className="animate-fade-in-up delay-500">
             <AllergyChecker />
+          </div>
+
+          {/* Expiry Tracker */}
+          <div className="animate-fade-in-up delay-500">
+            <ExpiryTracker />
+          </div>
+
+          {/* Health Journal */}
+          <div className="animate-fade-in-up delay-500">
+            <HealthJournal medicines={userMeds.map((m: any) => m.medicineName)} />
+          </div>
+
+          {/* Statistics */}
+          <div className="animate-fade-in-up delay-500">
+            <StatisticsDashboard />
           </div>
         </main>
 

@@ -16,11 +16,21 @@ Every year, thousands die from preventable medicine interactions. In Pakistan:
 ## ✅ Solution
 
 PillWise lets users:
-- 🔍 Search 50+ medicines by name or category
+- 🔍 Search 50+ medicines by name or category (with voice input)
 - ⚡ Select multiple medicines and check interactions instantly
+- 🤖 AI health chatbot for medicine questions
 - 👤 Track personal medicine list
 - 👨‍👩‍👧 Manage family members' medicines separately
-- 📊 View safety dashboard with warnings
+- 📊 View safety dashboard with warnings & interaction heatmap
+- 💊 Dosage calculator (by age/weight)
+- ⚠️ Allergy checker & safety alternatives (pregnancy, kidney, liver, meal timing)
+- 📅 Expiry tracker & health journal
+- 📄 Export reports as PDF
+- 🌐 English + Urdu (اردو) language toggle
+- 📱 PWA — installable, works offline
+- 🗣️ Voice search & share results
+- 🩺 Doctor Mode — printable summary for consultations
+- 🧪 Demo mode & statistics dashboard
 
 ## 🛠️ Tech Stack
 
@@ -62,15 +72,19 @@ Connect to SQL Server and run the SQL scripts in `database/` folder.
 
 ```
 PillWise/
-├── backend/PillWise.API/     # ASP.NET Core Web API
-│   ├── Controllers/          # API endpoints
-│   ├── Models/               # Entity models
-│   ├── Data/                 # DbContext
-│   └── DTOs/                 # Data transfer objects
-├── frontend/                 # Next.js app
-│   ├── app/                  # Pages
-│   └── lib/                  # API service
-└── database/                 # SQL scripts
+├── backend/
+│   ├── PillWise.API/           # ASP.NET Core Web API
+│   │   ├── Controllers/        # API endpoints
+│   │   ├── Models/             # Entity models
+│   │   ├── Data/               # DbContext
+│   │   └── DTOs/               # Data transfer objects
+│   └── PillWise.Tests/         # xUnit unit tests (7 tests)
+├── frontend/                   # Next.js app
+│   ├── app/                    # Pages (landing, home, search, checker...)
+│   ├── components/             # UI components (chatbot, PDF, tools...)
+│   └── lib/                    # API client, i18n, icons
+├── database/                   # SQL scripts
+└── .github/workflows/ci.yml    # CI: build + test (backend & frontend)
 ```
 
 ## 📊 API Endpoints
@@ -86,6 +100,21 @@ PillWise/
 | POST | /api/usermedicines | Add medicine |
 | GET | /api/family | Get family members |
 | GET | /api/dashboard/stats | Get dashboard stats |
+| GET | /swagger | Interactive API docs (Swagger UI) |
+
+## ✅ Testing & CI
+
+```bash
+# Backend unit tests
+cd backend
+dotnet test
+
+# Frontend build check
+cd frontend
+npm run build
+```
+
+GitHub Actions runs both automatically on every push (`.github/workflows/ci.yml`).
 
 ## 🏆 Hackathon Track
 
