@@ -5,11 +5,14 @@ import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import { ToastProvider } from "@/components/Toast";
 import { I18nProvider } from "@/lib/i18n";
+import { registerServiceWorker } from "@/lib/offline";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
+
+if (typeof window !== "undefined") registerServiceWorker();
 
 export const metadata: Metadata = {
   title: "PillWise - Medicine Interaction Checker",

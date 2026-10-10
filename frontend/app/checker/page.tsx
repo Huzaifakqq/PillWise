@@ -1,32 +1,74 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, getAuth, UserMedicine, Interaction } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 import InteractionHeatmap from "@/components/InteractionHeatmap";
 import { RadarScanner, Confetti, PulseShield } from "@/components/Visuals";
 import { ShareCardButton } from "@/components/ShareCard";
 import PillVisual from "@/components/PillVisual";
+import RedAlertOverlay from "@/components/RedAlertOverlay";
+import PrintableMedicineCard from "@/components/PrintableMedicineCard";
+import SaferSubstitutes from "@/components/SaferSubstitutes";
+import { saveLastCheck, loadLastCheck } from "@/lib/offline";
+import { classifyBodySystem } from "@/lib/body-system";
 
 export default function CheckerPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [medicines, setMedicines] = useState<UserMedicine[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [results, setResults] = useState<Interaction[]>([]);
   const [checking, setChecking] = useState(false);
   const [hasChecked, setHasChecked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showRedAlert, setShowRedAlert] = useState(false);
+  // navigator.onLine is read once in a lazy state-initialiser (runs at mount,
+  // not in an effect). The effect below only subscribes to real network events.
+  const [offline, setOffline] = useState<boolean>(
+    () => typeof navigator !== "undefined" && navigator.onLine === false
+  );
+  const [restoredFromCache, setRestoredFromCache] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
     if (!auth) return router.push("/login");
+
+    const syncOnline = () => setOffline(typeof navigator !== "undefined" && navigator.onLine === false);
+    window.addEventListener("offline", syncOnline);
+    window.addEventListener("online", syncOnline);
+
     api.getUserMedicines(auth.id)
       .then(setMedicines)
-      .catch(console.error)
+      .catch(() => {
+        // Fail-safe: if the API is unreachable, restore the last successful check.
+        const cached = loadLastCheck();
+        if (cached) {
+          setResults(cached.results);
+          setSelected(cached.medicines.map((m) => m.id));
+          setHasChecked(true);
+          setRestoredFromCache(true);
+        }
+      })
       .finally(() => setLoading(false));
+
+    return () => {
+      window.removeEventListener("offline", syncOnline);
+      window.removeEventListener("online", syncOnline);
+    };
   }, [router]);
+
+  const bodySystems = useMemo(
+    () =>
+      Object.fromEntries(
+        medicines.map((m) => [m.medicineName, classifyBodySystem(m.medicineName)])
+      ),
+    [medicines]
+  );
 
   const toggleSelect = (id: number) => {
     setHasChecked(false);
+    setRestoredFromCache(false);
     setResults([]);
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -36,12 +78,32 @@ export default function CheckerPage() {
   const handleCheck = async () => {
     if (selected.length < 2) return;
     setChecking(true);
+    setRestoredFromCache(false);
     try {
       const res = (await api.checkInteractions(selected)) as Interaction[];
       setResults(res);
       setHasChecked(true);
+
+      saveLastCheck({
+        medicines: medicines
+          .filter((m) => selected.includes(m.id))
+          .map((m) => ({ id: m.id, name: m.medicineName, dosage: m.dosage })),
+        results: res,
+        checkedAt: new Date().toISOString(),
+      });
+
+      if (res.some((r) => r.severity === "Dangerous" || r.severity === "Major")) {
+        setShowRedAlert(true);
+      }
     } catch (err) {
       console.error(err);
+      // Fail-safe: fall back to the last successful check when the API is down.
+      const cached = loadLastCheck();
+      if (cached) {
+        setResults(cached.results);
+        setHasChecked(true);
+        setRestoredFromCache(true);
+      }
     } finally {
       setChecking(false);
     }
@@ -50,6 +112,7 @@ export default function CheckerPage() {
   const getSeverityStyles = (severity: string) => {
     switch (severity) {
       case "Dangerous":
+      case "Major":
         return { bg: "severity-dangerous", text: "text-red-400", badge: "bg-red-500/20 text-red-400 border-red-500/30", emoji: "🔴" };
       case "Mild":
         return { bg: "severity-mild", text: "text-yellow-400", badge: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", emoji: "🟡" };
@@ -58,12 +121,24 @@ export default function CheckerPage() {
     }
   };
 
-  const dangerCount = results.filter((r) => r.severity === "Dangerous").length;
+  const dangerCount = results.filter((r) => r.severity === "Dangerous" || r.severity === "Major").length;
   const mildCount = results.filter((r) => r.severity === "Mild").length;
   const safeCount = results.filter((r) => r.severity === "Safe").length;
 
+  const warnings = results
+    .filter((r) => r.severity === "Dangerous" || r.severity === "Major")
+    .map((r) => ({
+      medicine: `${r.medicine1Name} + ${r.medicine2Name}`,
+      severity: r.severity,
+      advice: r.advice || r.description || "",
+    }));
+
   return (
     <div className="min-h-screen bg-slate-950 bg-grid">
+      {showRedAlert && (
+        <RedAlertOverlay results={results} onClose={() => setShowRedAlert(false)} />
+      )}
+
       <div className="min-h-screen bg-gradient-to-b from-red-950/20 via-transparent to-slate-950">
         {/* Header */}
         <header className="glass-card border-0 border-b border-slate-800/50 sticky top-0 z-50 rounded-none">
@@ -73,18 +148,39 @@ export default function CheckerPage() {
             </button>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                ⚡ Interaction Checker
+                ⚡ {t("interactionChecker")}
               </h1>
-              <p className="text-xs text-slate-500">Check if medicines are safe together</p>
+              <p className="text-xs text-slate-500">{t("selectMedicines")}</p>
             </div>
+            {offline && (
+              <span className="text-[10px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2 py-1 rounded-full">
+                {t("offlineMode")}
+              </span>
+            )}
             <div className="glass-card px-4 py-2 rounded-xl">
               <span className="text-sm text-slate-400">Selected: </span>
               <span className="text-sm font-bold text-blue-400">{selected.length}</span>
             </div>
+            <PrintableMedicineCard
+              userName={getAuth()?.name || ""}
+              medicines={medicines.filter((m) => selected.includes(m.id))}
+              warnings={warnings}
+            />
           </div>
         </header>
 
         <main id="main-content" className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          {/* Offline / cached banners */}
+          {restoredFromCache && (
+            <div className="glass-card p-4 bg-amber-500/10 border-amber-500/40 flex items-center gap-3 animate-fade-in">
+              <span className="text-2xl">📶</span>
+              <div>
+                <p className="text-amber-400 font-semibold text-sm">{t("offlineNotice")}</p>
+                <p className="text-slate-500 text-xs">{t("cachedResult")}</p>
+              </div>
+            </div>
+          )}
+
           {/* Instructions */}
           <div className="glass-card p-5 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 border-blue-500/20 animate-fade-in-up">
             <div className="flex items-start gap-4">
@@ -126,7 +222,7 @@ export default function CheckerPage() {
             <>
               <div className="space-y-3">
                 <div className="flex items-center justify-between animate-fade-in-up">
-                  <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Your Medicines</h3>
+                  <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">{t("myMedicines")}</h3>
                   <button
                     onClick={() => {
                       if (selected.length === medicines.length) {
@@ -135,6 +231,7 @@ export default function CheckerPage() {
                         setSelected(medicines.map((m) => m.id));
                       }
                       setHasChecked(false);
+                      setRestoredFromCache(false);
                       setResults([]);
                     }}
                     className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
@@ -188,7 +285,11 @@ export default function CheckerPage() {
                 <div className="animate-fade-in-up">
                   <InteractionHeatmap
                     data={{
-                      medicines: medicines.map((m) => ({ id: m.id, name: m.medicineName })),
+                      medicines: medicines.map((m) => ({
+                        id: m.id,
+                        name: m.medicineName,
+                        bodySystem: m.bodySystem || bodySystems[m.medicineName],
+                      })),
                       interactions: results.map((r) => ({
                         med1Id: medicines.find((m) => m.medicineName === r.medicine1Name)?.id || 0,
                         med2Id: medicines.find((m) => m.medicineName === r.medicine2Name)?.id || 0,
@@ -216,14 +317,14 @@ export default function CheckerPage() {
                   </>
                 ) : (
                   <>
-                    ⚡ Check {selected.length} Medicine{selected.length !== 1 ? "s" : ""} Now
+                    ⚡ {t("checkNow")} ({selected.length})
                   </>
                 )}
               </button>
 
               {/* Scanning Radar */}
               {checking && (
-                <RadarScanner label={`Scanning ${selected.length} medicines against 30 known interactions...`} />
+                <RadarScanner label={`Scanning ${selected.length} medicines against 45 known interactions...`} />
               )}
 
               {/* Results */}
@@ -233,15 +334,15 @@ export default function CheckerPage() {
                   <div className="grid grid-cols-3 gap-3">
                     <div className="glass-card p-4 text-center severity-safe animate-bounce-in" style={{ animationDelay: "0ms" }}>
                       <div className="text-3xl font-bold text-green-400">{safeCount}</div>
-                      <div className="text-xs text-green-400/80 font-medium mt-1">✓ Safe</div>
+                      <div className="text-xs text-green-400/80 font-medium mt-1">✓ {t("safe")}</div>
                     </div>
                     <div className="glass-card p-4 text-center severity-mild animate-bounce-in" style={{ animationDelay: "120ms" }}>
                       <div className="text-3xl font-bold text-yellow-400">{mildCount}</div>
-                      <div className="text-xs text-yellow-400/80 font-medium mt-1">⚠ Mild</div>
+                      <div className="text-xs text-yellow-400/80 font-medium mt-1">⚠ {t("mild")}</div>
                     </div>
                     <div className="glass-card p-4 text-center severity-dangerous animate-bounce-in" style={{ animationDelay: "240ms" }}>
                       <div className="text-3xl font-bold text-red-400">{dangerCount}</div>
-                      <div className="text-xs text-red-400/80 font-medium mt-1">✕ Dangerous</div>
+                      <div className="text-xs text-red-400/80 font-medium mt-1">✕ {t("dangerous")}</div>
                     </div>
                   </div>
 
@@ -251,8 +352,14 @@ export default function CheckerPage() {
                       <div className="flex justify-center mb-3">
                         <PulseShield danger />
                       </div>
-                      <p className="text-red-400 font-bold text-2xl mb-1 text-glow">DANGEROUS INTERACTION!</p>
-                      <p className="text-slate-400 text-sm">Consult your doctor immediately</p>
+                      <p className="text-red-400 font-bold text-2xl mb-1 text-glow">{t("dangerousFound")}</p>
+                      <p className="text-slate-400 text-sm">{t("consultDoctor")}</p>
+                      <button
+                        onClick={() => setShowRedAlert(true)}
+                        className="mt-4 px-6 py-2 bg-red-500/20 border border-red-500/50 text-red-300 rounded-xl text-sm font-semibold hover:bg-red-500/30 transition-colors"
+                      >
+                        🚨 {t("redAlert")}
+                      </button>
                     </div>
                   ) : mildCount === 0 ? (
                     <div className="relative overflow-hidden glass-card p-6 text-center border border-green-500/30 bg-gradient-to-b from-green-500/5 to-transparent glow-ring">
@@ -264,6 +371,18 @@ export default function CheckerPage() {
                       <p className="text-slate-400 text-sm relative z-10">These medicines are safe to take together</p>
                     </div>
                   ) : null}
+
+                  {/* Safer Substitutes for clashing pairs */}
+                  {dangerCount > 0 && (
+                    <SaferSubstitutes
+                      clashing={results
+                        .filter((r) => r.severity === "Dangerous" || r.severity === "Major")
+                        .map((r) => ({
+                          medicine1: { id: r.medicine1Id, name: r.medicine1Name },
+                          medicine2: { id: r.medicine2Id, name: r.medicine2Name },
+                        }))}
+                    />
+                  )}
 
                   {/* Individual Results */}
                   <div className="space-y-4">
@@ -307,9 +426,7 @@ export default function CheckerPage() {
 
                   {/* Disclaimer */}
                   <div className="glass-card p-4 text-center bg-slate-900/40">
-                    <p className="text-xs text-slate-500">
-                      ⚠️ This is not medical advice. Always consult a healthcare professional.
-                    </p>
+                    <p className="text-xs text-slate-500">{t("disclaimer")}</p>
                   </div>
                 </div>
               )}

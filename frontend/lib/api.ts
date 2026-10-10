@@ -14,11 +14,11 @@ async function request<T = any>(endpoint: string, options?: RequestInit): Promis
 
 export const api = {
   // Auth
-  register: (data: { name: string; email: string; phone?: string; password: string; allergies?: string }) =>
+  register: (data: RegisterDto) =>
     request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
-  login: (data: { email: string; password: string }) =>
+  login: (data: LoginDto) =>
     request<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
-  getProfile: (id: number) => request<any>(`/auth/profile/${id}`),
+  getProfile: (id: number) => request<Medicine>(`/auth/profile/${id}`),
 
   // Medicines
   getMedicines: (search?: string, categoryId?: number) => {
@@ -27,12 +27,17 @@ export const api = {
     if (categoryId) params.set("categoryId", categoryId.toString());
     return request<Medicine[]>(`/medicines?${params.toString()}`);
   },
-  getMedicine: (id: number) => request<any>(`/medicines/${id}`),
+  getMedicine: (id: number) =>
+    request<{ medicine: Medicine; interactions: InteractionDetail[] }>(`/medicines/${id}`),
   getCategories: () => request<Category[]>("/medicines/categories"),
+  getAlternatives: (id: number) => request<Medicine[]>(`/medicines/${id}/alternatives`),
 
   // Interactions
   checkInteractions: (medicineIds: number[]) =>
-    request<Interaction[]>("/interactions/check", { method: "POST", body: JSON.stringify({ medicineIds }) }),
+    request<Interaction[]>("/interactions/check", {
+      method: "POST",
+      body: JSON.stringify({ medicineIds } satisfies InteractionCheckDto),
+    }),
 
   // User Medicines
   getUserMedicines: (userId: number, familyMemberId?: number) => {
@@ -40,17 +45,17 @@ export const api = {
     if (familyMemberId) params.set("familyMemberId", familyMemberId.toString());
     return request<UserMedicine[]>(`/usermedicines?${params.toString()}`);
   },
-  addUserMedicine: (data: { userId: number; familyMemberId?: number; medicineId: number; dosage?: string; timing?: string }) =>
-    request<any>("/usermedicines", { method: "POST", body: JSON.stringify(data) }),
+  addUserMedicine: (data: AddUserMedicineDto) =>
+    request<UserMedicine>("/usermedicines", { method: "POST", body: JSON.stringify(data) }),
   removeUserMedicine: (id: number) =>
-    request<any>(`/usermedicines/${id}`, { method: "DELETE" }),
+    request<void>(`/usermedicines/${id}`, { method: "DELETE" }),
 
   // Family
   getFamily: (userId: number) => request<FamilyMember[]>(`/family?userId=${userId}`),
-  addFamilyMember: (data: { userId: number; name: string; relation?: string; age?: number }) =>
-    request<any>("/family", { method: "POST", body: JSON.stringify(data) }),
+  addFamilyMember: (data: AddFamilyMemberDto) =>
+    request<FamilyMember>("/family", { method: "POST", body: JSON.stringify(data) }),
   deleteFamilyMember: (id: number) =>
-    request<any>(`/family/${id}`, { method: "DELETE" }),
+    request<void>(`/family/${id}`, { method: "DELETE" }),
 
   // Dashboard
   getDashboardStats: (userId: number) => request<DashboardStats>(`/dashboard/stats?userId=${userId}`),
@@ -59,79 +64,50 @@ export const api = {
   seedDemo: () => request<AuthResponse>("/demo/seed", { method: "POST" }),
 
   // Side Effects
-  reportSideEffect: (data: { userId: number; medicineId: number; description?: string; severity?: string }) =>
-    request<any>("/sideeffects", { method: "POST", body: JSON.stringify(data) }),
+  reportSideEffect: (data: SideEffectDto) =>
+    request<void>("/sideeffects", { method: "POST", body: JSON.stringify(data) }),
 };
 
-// Types
-export interface Medicine {
-  id: number;
-  name: string;
-  genericName?: string;
-  categoryId: number;
-  categoryName?: string;
-  form?: string;
-  manufacturer?: string;
-  purpose?: string;
-  sideEffects?: string;
-  dosage?: string;
-  priceRange?: string;
-}
+// Types (generated from backend swagger.json + DTOs — see lib/api-types.ts)
+import type {
+  MedicineDto as Medicine,
+  InteractionResultDto as Interaction,
+  UserMedicineDto as UserMedicine,
+  FamilyMemberDto as FamilyMember,
+  CategoryDto as Category,
+  DashboardStatsDto as DashboardStats,
+  AuthResponseDto as AuthResponse,
+  RegisterDto,
+  LoginDto,
+  InteractionCheckDto,
+  AddUserMedicineDto,
+  AddFamilyMemberDto,
+  SideEffectDto,
+} from "./api-types";
 
-export interface Interaction {
-  medicine1Id: number;
-  medicine1Name: string;
-  medicine2Id: number;
-  medicine2Name: string;
+/** Interaction attached to a single medicine (GET /medicines/{id}). */
+export interface InteractionDetail {
   severity: string;
   description?: string;
   advice?: string;
+  otherMedicine: string;
 }
 
-export interface UserMedicine {
-  id: number;
-  userId: number;
-  familyMemberId?: number;
-  familyMemberName?: string;
-  medicineId: number;
-  medicineName: string;
-  medicineForm?: string;
-  dosage?: string;
-  timing?: string;
-  startDate?: string;
-  endDate?: string;
-  isActive: boolean;
-}
-
-export interface FamilyMember {
-  id: number;
-  userId: number;
-  name: string;
-  relation?: string;
-  age?: number;
-  medicineCount: number;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  icon?: string;
-  medicineCount: number;
-}
-
-export interface DashboardStats {
-  totalMedicines: number;
-  activeWarnings: number;
-  familyMembers: number;
-  totalInteractions: number;
-}
-
-export interface AuthResponse {
-  id: number;
-  name: string;
-  email: string;
-  token: string;
-}
+export type {
+  Medicine,
+  Interaction,
+  UserMedicine,
+  FamilyMember,
+  Category,
+  DashboardStats,
+  AuthResponse,
+  RegisterDto,
+  LoginDto,
+  InteractionCheckDto,
+  AddUserMedicineDto,
+  AddFamilyMemberDto,
+  SideEffectDto,
+};
 
 // Auth helpers
 export function saveAuth(auth: AuthResponse) {

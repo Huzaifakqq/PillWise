@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { api, getAuth } from "@/lib/api";
+import { api, getAuth, type InteractionDetail, type Medicine } from "@/lib/api";
 import {
   MedicineAlternatives,
   MealTimingGuide,
@@ -13,19 +13,8 @@ import { getMedicineIcon } from "@/lib/medicine-icons";
 import { useToast } from "@/components/Toast";
 
 interface MedicineDetail {
-  medicine: {
-    id: number;
-    name: string;
-    genericName?: string;
-    categoryName?: string;
-    form?: string;
-    manufacturer?: string;
-    purpose?: string;
-    sideEffects?: string;
-    dosage?: string;
-    priceRange?: string;
-  };
-  interactions: { severity: string; description?: string; advice?: string; otherMedicine: string }[];
+  medicine: Medicine;
+  interactions: InteractionDetail[];
 }
 
 function MedicineContent() {

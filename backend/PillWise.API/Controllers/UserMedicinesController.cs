@@ -36,6 +36,7 @@ public class UserMedicinesController : ControllerBase
             MedicineId = um.MedicineId,
             MedicineName = um.Medicine!.Name,
             MedicineForm = um.Medicine.Form,
+            BodySystem = BodySystemClassifier.Classify(um.Medicine.Name, um.Medicine.SideEffects),
             Dosage = um.Dosage,
             Timing = um.Timing,
             StartDate = um.StartDate,

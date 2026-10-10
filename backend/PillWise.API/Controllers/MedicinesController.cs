@@ -52,7 +52,8 @@ public class MedicinesController : ControllerBase
         Purpose = m.Purpose,
         SideEffects = m.SideEffects,
         Dosage = m.Dosage,
-        PriceRange = m.PriceRange
+        PriceRange = m.PriceRange,
+        BodySystem = PillWise.API.Models.BodySystemClassifier.Classify(m.Name, m.SideEffects)
     };
 
     /// <summary>Fuzzy match score: exact 100, prefix 80, contains 60, typo (Levenshtein ≤2) 40-distance.</summary>
@@ -104,7 +105,8 @@ public class MedicinesController : ControllerBase
                 Purpose = m.Purpose,
                 SideEffects = m.SideEffects,
                 Dosage = m.Dosage,
-                PriceRange = m.PriceRange
+                PriceRange = m.PriceRange,
+                BodySystem = PillWise.API.Models.BodySystemClassifier.Classify(m.Name, m.SideEffects)
             })
             .FirstOrDefaultAsync();
         
@@ -141,5 +143,34 @@ public class MedicinesController : ControllerBase
             .ToListAsync();
         
         return Ok(categories);
+    }
+
+    /// <summary>
+    /// Safe alternatives for a medicine: same category, not involved in any
+    /// Dangerous/Major interaction with the given medicine. Powers the
+    /// "safer substitute" suggestion when two medicines clash.
+    /// </summary>
+    [HttpGet("{id:int}/alternatives")]
+    public async Task<IActionResult> GetAlternatives(int id)
+    {
+        var medicine = await _db.Medicines.FindAsync(id);
+        if (medicine == null) return NotFound();
+
+        var unsafeIds = await _db.Interactions
+            .Where(i => (i.Medicine1Id == id || i.Medicine2Id == id) &&
+                        (i.Severity == "Dangerous" || i.Severity == "Major"))
+            .Select(i => i.Medicine1Id == id ? i.Medicine2Id : i.Medicine1Id)
+            .ToListAsync();
+
+        var alternatives = await _db.Medicines
+            .Include(m => m.Category)
+            .Where(m => m.CategoryId == medicine.CategoryId &&
+                        m.Id != id &&
+                        !unsafeIds.Contains(m.Id))
+            .Take(5)
+            .Select(m => ToDto(m))
+            .ToListAsync();
+
+        return Ok(alternatives);
     }
 }

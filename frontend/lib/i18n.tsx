@@ -74,6 +74,31 @@ const translations = {
 
     // Disclaimer
     disclaimer: "This is not medical advice. Always consult a healthcare professional.",
+
+    // Emergency / Red Alert
+    redAlert: "Red Alert",
+    redAlertTitle: "EMERGENCY: Dangerous Interactions",
+    redAlertSubtitle: "Show this screen to your doctor or pharmacist now",
+    noDangerous: "No dangerous interactions found",
+    dismiss: "Dismiss",
+
+    // Printable card
+    printCard: "Print Card",
+    largePrintCard: "Large-Print Medicine Card",
+    printInstructions: "Tape this to your fridge or keep it in your wallet",
+
+    // Body systems
+    bodySystems: "By Body System",
+    bodySystemSubtitle: "Where these medicines could cause harm",
+
+    // Safer substitutes
+    saferSubstitutes: "Safer Substitutes",
+    noSubstitutes: "No safer substitute found in this category",
+
+    // Offline
+    offlineMode: "Offline",
+    offlineNotice: "You are offline. Showing the last saved check.",
+    cachedResult: "Saved check",
   },
   ur: {
     // Navigation
@@ -145,6 +170,31 @@ const translations = {
 
     // Disclaimer
     disclaimer: "یہ طبی مشورہ نہیں ہے۔ ہمیشہ کسی ہیلث کیئر پروفیشنل سے رجوع کریں۔",
+
+    // Emergency / Red Alert
+    redAlert: "سرخ انتباہ",
+    redAlertTitle: "ایمرجنسی: خطرناک باہمی اثرات",
+    redAlertSubtitle: "اس سکرین کو اپنے ڈاکٹر یا صيدلی کو دکھائیں",
+    noDangerous: "کوئی خطرناک باہمی اثر نہیں ملا",
+    dismiss: "بند کریں",
+
+    // Printable card
+    printCard: "کارڈ پرنٹ کریں",
+    largePrintCard: "بڑے حروف والی ادویات کا کارڈ",
+    printInstructions: "اسے فریج پر چسپاں کریں یا اپنے پارس میں رکھیں",
+
+    // Body systems
+    bodySystems: "جسمانی نظام کے مطابق",
+    bodySystemSubtitle: "یہ ادویات کس حصے کو نقصان پہنچا سکتی ہیں",
+
+    // Safer substitutes
+    saferSubstitutes: "محفوظ متبادل",
+    noSubstitutes: "اس زمرے میں کوئی محفوظ متبادل نہیں ملا",
+
+    // Offline
+    offlineMode: "آف لائن",
+    offlineNotice: "آپ آف لائن ہیں۔ آخری محفوظ شدہ چیک دکھائی جا رہی ہے۔",
+    cachedResult: "محفوظ شدہ چیک",
   },
 };
 

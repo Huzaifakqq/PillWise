@@ -36,6 +36,7 @@ public class MedicineDto
     public string? SideEffects { get; set; }
     public string? Dosage { get; set; }
     public string? PriceRange { get; set; }
+    public string BodySystem { get; set; } = "General";
 }
 
 public class InteractionCheckDto
@@ -63,6 +64,7 @@ public class UserMedicineDto
     public int MedicineId { get; set; }
     public string MedicineName { get; set; } = string.Empty;
     public string? MedicineForm { get; set; }
+    public string? BodySystem { get; set; }
     public string? Dosage { get; set; }
     public string? Timing { get; set; }
     public DateTime? StartDate { get; set; }

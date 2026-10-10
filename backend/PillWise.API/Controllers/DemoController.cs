@@ -17,6 +17,10 @@ public class DemoController : ControllerBase
     private readonly PillWiseDbContext _db;
     private readonly IConfiguration _config;
 
+    // Simple in-memory rate limiter: max N seeds per IP per minute.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (DateTime WindowStart, int Count)> _hits = new();
+    private const int MaxSeedsPerMinute = 10;
+
     public DemoController(PillWiseDbContext db, IConfiguration config)
     {
         _db = db;
@@ -26,10 +30,15 @@ public class DemoController : ControllerBase
     /// <summary>
     /// One-click demo: creates (or resets) a fully populated demo account
     /// with a family member, medicines, and a known dangerous interaction.
+    /// Public (no auth) so judges can try it, but rate-limited to prevent abuse.
     /// </summary>
     [HttpPost("seed")]
     public async Task<IActionResult> SeedDemo()
     {
+        var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        if (!CheckRateLimit(clientIp))
+            return StatusCode(StatusCodes.Status429TooManyRequests, "Too many demo requests. Try again in a minute.");
+
         const string demoEmail = "demo@pillwise.pk";
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == demoEmail);
 
@@ -92,5 +101,17 @@ public class DemoController : ControllerBase
         };
         var token = new JwtSecurityToken(claims: claims, expires: DateTime.UtcNow.AddDays(7), signingCredentials: creds);
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static bool CheckRateLimit(string ip)
+    {
+        var now = DateTime.UtcNow;
+        var entry = _hits.AddOrUpdate(ip,
+            _ => (now, 1),
+            (_, existing) =>
+                now - existing.WindowStart > TimeSpan.FromMinutes(1)
+                    ? (now, 1)
+                    : (existing.WindowStart, existing.Count + 1));
+        return entry.Count <= MaxSeedsPerMinute;
     }
 }

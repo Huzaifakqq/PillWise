@@ -1,13 +1,17 @@
 "use client";
-import { getSeverityConfig } from "@/lib/medicine-icons";
+import { classifyBodySystem, BODY_SYSTEM_META } from "@/lib/body-system";
+import { useI18n } from "@/lib/i18n";
 
 interface HeatmapData {
-  medicines: { id: number; name: string }[];
+  medicines: { id: number; name: string; bodySystem?: string }[];
   interactions: { med1Id: number; med2Id: number; severity: string }[];
 }
 
+const SEVERITY_RANK: Record<string, number> = { Dangerous: 3, Mild: 2, Safe: 1 };
+
 export default function InteractionHeatmap({ data }: { data: HeatmapData }) {
   const { medicines, interactions } = data;
+  const { t } = useI18n();
 
   if (medicines.length < 2) {
     return (
@@ -84,6 +88,69 @@ export default function InteractionHeatmap({ data }: { data: HeatmapData }) {
         </div>
       </div>
 
+      {/* Body system risk groups */}
+      {(() => {
+        const groups = new Map<string, { medicines: typeof medicines; worst: string }>();
+        for (const med of medicines) {
+          const system = med.bodySystem || classifyBodySystem(med.name);
+          if (!groups.has(system)) groups.set(system, { medicines: [], worst: "Safe" });
+          const g = groups.get(system)!;
+          g.medicines.push(med);
+
+          for (const inter of interactions) {
+            const involves =
+              (inter.med1Id === med.id || inter.med2Id === med.id) &&
+              medicines.some((m) => m.id === (inter.med1Id === med.id ? inter.med2Id : inter.med1Id));
+            if (involves && SEVERITY_RANK[inter.severity] > SEVERITY_RANK[g.worst]) {
+              g.worst = inter.severity;
+            }
+          }
+        }
+
+        const ranked = [...groups.entries()].sort(
+          (a, b) => SEVERITY_RANK[b[1].worst] - SEVERITY_RANK[a[1].worst]
+        );
+
+        return (
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              {t("bodySystems")}
+            </h4>
+            <p className="text-xs text-slate-500 mb-3">{t("bodySystemSubtitle")}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {ranked.map(([system, g]) => {
+                const meta = BODY_SYSTEM_META[system] || BODY_SYSTEM_META.General;
+                return (
+                  <div
+                    key={system}
+                    className={`flex items-center gap-3 rounded-xl border px-3 py-2 bg-slate-900/40 ${meta.ring}`}
+                  >
+                    <span className="text-xl">{meta.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm font-semibold ${meta.color}`}>{system}</p>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {g.medicines.map((m) => m.name).join(", ")}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full border ${
+                        g.worst === "Dangerous"
+                          ? "bg-red-500/20 text-red-400 border-red-500/40"
+                          : g.worst === "Mild"
+                          ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/40"
+                          : "bg-green-500/20 text-green-400 border-green-500/40"
+                      }`}
+                    >
+                      {g.worst}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Heatmap Grid */}
       <div className="overflow-x-auto -mx-2 px-2">
         <div className="min-w-fit">
@@ -106,7 +173,7 @@ export default function InteractionHeatmap({ data }: { data: HeatmapData }) {
           </div>
 
           {/* Rows */}
-          {medicines.map((rowMed, rowIdx) => (
+          {medicines.map((rowMed) => (
             <div key={rowMed.id} className="flex items-center mb-1">
               <div className="w-24 flex-shrink-0 text-right pr-3">
                 <span className="text-xs text-slate-400 truncate block">{rowMed.name.substring(0, 12)}</span>
