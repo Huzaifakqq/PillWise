@@ -29,105 +29,177 @@ function SearchContent() {
   }, [query, selectedCat]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/50 to-slate-950">
-      {/* Header */}
-      <header className="bg-slate-900/60 backdrop-blur border-b border-slate-800 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-slate-400 hover:text-white text-xl">←</button>
-          <h1 className="text-xl font-bold text-white">Search Medicines</h1>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-950 bg-grid">
+      <div className="min-h-screen bg-gradient-to-b from-blue-950/30 via-transparent to-slate-950">
+        {/* Header */}
+        <header className="glass-card border-0 border-b border-slate-800/50 sticky top-0 z-50 rounded-none">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+            <button onClick={() => router.back()} className="w-10 h-10 rounded-xl bg-slate-800/60 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/60 transition-all">
+              ←
+            </button>
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-white">Search Medicines</h1>
+              <p className="text-xs text-slate-500">Find any medicine in our database</p>
+            </div>
+            <Link href="/checker" className="btn-primary px-4 py-2 rounded-xl text-sm text-white font-medium flex items-center gap-2">
+              ⚡ Check
+            </Link>
+          </div>
+        </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-        {/* Search Input */}
-        <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xl">🔍</span>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type medicine name..."
-            className="w-full pl-12 pr-4 py-4 bg-slate-900/80 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-            autoFocus
-          />
-        </div>
+        <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          {/* Search Input */}
+          <div className="glass-card p-2 flex items-center gap-3 focus-within:border-blue-500/50 transition-all animate-fade-in-up">
+            <span className="pl-4 text-slate-500 text-xl">🔍</span>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Type medicine name..."
+              className="flex-1 bg-transparent text-white placeholder-slate-500 focus:outline-none py-3 text-lg"
+              autoFocus
+            />
+            {query && (
+              <button onClick={() => setQuery("")} className="pr-4 text-slate-500 hover:text-white transition-colors">
+                ✕
+              </button>
+            )}
+          </div>
 
-        {/* Category Filter */}
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-          <button
-            onClick={() => setSelectedCat(undefined)}
-            className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition ${
-              !selectedCat ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-            }`}
-          >
-            All
-          </button>
-          {categories.map((cat) => (
+          {/* Category Filter */}
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 animate-fade-in-up delay-100">
             <button
-              key={cat.id}
-              onClick={() => setSelectedCat(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition ${
-                selectedCat === cat.id ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+              onClick={() => setSelectedCat(undefined)}
+              className={`px-5 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all flex items-center gap-2 ${
+                !selectedCat
+                  ? "bg-gradient-medical text-white shadow-lg shadow-blue-500/20"
+                  : "glass-card text-slate-400 hover:bg-slate-800/60"
               }`}
             >
-              {cat.icon} {cat.name}
+              <span>📋</span> All
             </button>
-          ))}
-        </div>
-
-        {/* Results */}
-        {loading ? (
-          <div className="text-center py-12 text-slate-400">
-            <div className="text-4xl mb-2 animate-pulse">💊</div>
-            Searching...
-          </div>
-        ) : medicines.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
-            <div className="text-5xl mb-3">🔍</div>
-            <p>No medicines found</p>
-            <p className="text-sm mt-1">Try a different search term</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {medicines.map((med) => (
-              <Link
-                key={med.id}
-                href={`/medicine/${med.id}`}
-                className="block bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-blue-600/50 hover:bg-slate-800/50 transition-all animate-fade-in"
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCat(cat.id)}
+                className={`px-5 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all flex items-center gap-2 ${
+                  selectedCat === cat.id
+                    ? "bg-gradient-medical text-white shadow-lg shadow-blue-500/20"
+                    : "glass-card text-slate-400 hover:bg-slate-800/60"
+                }`}
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">💊 {med.name}</h3>
-                    {med.genericName && <p className="text-sm text-blue-400">{med.genericName}</p>}
-                    <p className="text-sm text-slate-400 mt-1">{med.purpose}</p>
-                    <div className="flex gap-2 mt-2">
-                      {med.categoryName && (
-                        <span className="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded-full">{med.categoryName}</span>
-                      )}
-                      {med.form && (
-                        <span className="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded-full">{med.form}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    {med.priceRange && <p className="text-sm text-green-400">{med.priceRange}</p>}
-                    <p className="text-slate-600 mt-2">→</p>
-                  </div>
-                </div>
-              </Link>
+                <span>{cat.icon}</span> {cat.name}
+              </button>
             ))}
           </div>
-        )}
 
-        <p className="text-center text-sm text-slate-500 pt-4">{medicines.length} medicines found</p>
-      </main>
+          {/* Results Count */}
+          <div className="flex items-center justify-between animate-fade-in-up delay-200">
+            <p className="text-sm text-slate-500">
+              Showing <span className="text-blue-400 font-semibold">{medicines.length}</span> results
+            </p>
+            {loading && <p className="text-sm text-slate-500 animate-pulse">Searching...</p>}
+          </div>
+
+          {/* Results */}
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="glass-card p-5 animate-pulse">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-slate-800 rounded-xl shimmer" />
+                    <div className="flex-1 space-y-3">
+                      <div className="h-5 bg-slate-800 rounded shimmer w-1/3" />
+                      <div className="h-4 bg-slate-800 rounded shimmer w-1/2" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : medicines.length === 0 ? (
+            <div className="glass-card p-12 text-center animate-fade-in">
+              <div className="text-6xl mb-4 animate-float">🔍</div>
+              <h3 className="text-xl font-bold text-white mb-2">No medicines found</h3>
+              <p className="text-slate-400 mb-6">Try a different search term or browse categories</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {["Panadol", "Brufen", "Augmentin"].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setQuery(s)}
+                    className="glass-card px-4 py-2 rounded-full text-sm text-slate-300 hover:bg-slate-800/60 transition-all"
+                  >
+                    Try &quot;{s}&quot;
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {medicines.map((med, index) => (
+                <Link
+                  key={med.id}
+                  href={`/medicine/${med.id}`}
+                  className="block glass-card glass-card-hover p-5 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 bg-gradient-medical rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
+                      <span className="text-2xl">💊</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="text-lg font-bold text-white truncate">{med.name}</h3>
+                        {med.genericName && (
+                          <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 flex-shrink-0">
+                            {med.genericName}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-400 line-clamp-1">{med.purpose}</p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {med.categoryName && (
+                          <span className="text-xs bg-slate-800/80 text-slate-300 px-3 py-1 rounded-full border border-slate-700/50">
+                            {med.categoryName}
+                          </span>
+                        )}
+                        {med.form && (
+                          <span className="text-xs bg-slate-800/80 text-slate-300 px-3 py-1 rounded-full border border-slate-700/50">
+                            {med.form}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                      {med.priceRange && (
+                        <span className="text-sm font-semibold text-green-400 bg-green-500/10 px-3 py-1 rounded-lg border border-green-500/20">
+                          {med.priceRange}
+                        </span>
+                      )}
+                      <div className="w-8 h-8 bg-slate-800/60 rounded-lg flex items-center justify-center text-slate-500 group-hover:text-blue-400 transition-colors">
+                        →
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-950">
+          <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin-slow" />
+          <p className="text-slate-400">Loading search...</p>
+        </div>
+      }
+    >
       <SearchContent />
     </Suspense>
   );
